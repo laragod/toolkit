@@ -1,0 +1,48 @@
+{
+    "name": "laragod/toolkit",
+    "description": "Reusable backend toolkit for Laragod portfolio sites",
+    "type": "library",
+    "version": "1.0.0",
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "illuminate/support": "^12.0",
+        "illuminate/http": "^12.0",
+        "illuminate/mail": "^12.0",
+        "illuminate/filesystem": "^12.0",
+        "illuminate/log": "^12.0",
+        "illuminate/routing": "^12.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^11.5",
+        "mockery/mockery": "^1.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Laragod\\Toolkit\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Laragod\\Toolkit\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Laragod\\Toolkit\\ToolkitServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
