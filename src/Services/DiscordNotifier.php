@@ -75,10 +75,11 @@ class DiscordNotifier implements ContactNotifier
     }
 
     /**
-     * @return array{embeds: list<array{title: string, color: int, fields: list<array{name: string, value: string, inline: bool}>, timestamp: string}>}
+     * @return array{embeds: list<array{title: string, color: int, fields: list<array{name: string, value: string, inline: bool}>, footer: array{text: string}, timestamp: string}>}
      */
     private function buildPayload(string $name, string $email, string $message): array
     {
+        $appName = $this->getAppName();
         $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
         $safeEmail = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
         $safeMessage = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
@@ -86,7 +87,7 @@ class DiscordNotifier implements ContactNotifier
         return [
             'embeds' => [
                 [
-                    'title' => '📩 New Contact Request',
+                    'title' => "📩 [{$appName}] New Contact Request",
                     'color' => 5814783,
                     'fields' => [
                         [
@@ -105,9 +106,19 @@ class DiscordNotifier implements ContactNotifier
                             'inline' => false,
                         ],
                     ],
+                    'footer' => [
+                        'text' => $appName,
+                    ],
                     'timestamp' => now()->toIso8601String(),
                 ],
             ],
         ];
+    }
+
+    private function getAppName(): string
+    {
+        $appName = config('notifications.app_name');
+
+        return is_string($appName) && $appName !== '' ? $appName : 'App';
     }
 }

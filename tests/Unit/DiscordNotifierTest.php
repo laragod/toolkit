@@ -106,4 +106,23 @@ class DiscordNotifierTest extends TestCase
 
         $this->assertFalse($result);
     }
+
+    public function test_signs_embed_with_app_name(): void
+    {
+        Http::fake([
+            'discord.com/*' => Http::response(null, 204),
+        ]);
+
+        config(['notifications.app_name' => 'Laragod']);
+
+        $notifier = new DiscordNotifier('https://discord.com/api/webhooks/test');
+        $notifier->send('John', 'john@example.com', 'Test');
+
+        Http::assertSent(function ($request) {
+            $embed = $request->data()['embeds'][0];
+
+            return str_contains($embed['title'], '[Laragod]')
+                && $embed['footer']['text'] === 'Laragod';
+        });
+    }
 }

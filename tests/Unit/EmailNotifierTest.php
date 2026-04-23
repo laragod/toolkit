@@ -117,4 +117,19 @@ class EmailNotifierTest extends TestCase
 
         $this->assertFalse($result);
     }
+
+    public function test_subject_includes_app_name_signature(): void
+    {
+        Mail::fake();
+        config(['mail.mailer' => 'smtp']);
+        config(['notifications.app_name' => 'Laragod']);
+
+        $notifier = new EmailNotifier('recipient@example.com');
+        $notifier->send('John', 'john@example.com', 'Test');
+
+        Mail::assertSent(
+            ContactFormSubmission::class,
+            fn (ContactFormSubmission $mail) => $mail->hasSubject('[Laragod] New Contact Form Submission'),
+        );
+    }
 }

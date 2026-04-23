@@ -97,17 +97,25 @@ class TelegramNotifier implements ContactNotifier
 
     private function formatMessage(string $name, string $email, string $message): string
     {
+        $appName = htmlspecialchars($this->getAppName(), ENT_QUOTES, 'UTF-8');
         $name = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
         $email = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
         $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
 
         return (
-            "📩 <b>New contact request</b>\n\n" . sprintf(
+            "📩 <b>[{$appName}] New contact request</b>\n\n" . sprintf(
                 '👤 <b>Name:</b> %s%s',
                 $name,
                 PHP_EOL,
             ) . "📧 <b>Email:</b> {$email}\n\n" . ('💬 <b>Message:</b>
 ' . $message)
         );
+    }
+
+    private function getAppName(): string
+    {
+        $appName = config('notifications.app_name');
+
+        return is_string($appName) && $appName !== '' ? $appName : 'App';
     }
 }

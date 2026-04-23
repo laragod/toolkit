@@ -83,6 +83,7 @@ class StorageNotifier implements ContactNotifier
     {
         $timestamp = now()->toIso8601String();
         $separator = str_repeat('=', 80);
+        $appName = $this->sanitize($this->getAppName());
 
         $name = $this->sanitize($name);
         $email = $this->sanitize($email);
@@ -90,8 +91,9 @@ class StorageNotifier implements ContactNotifier
 
         return <<<ENTRY
         {$separator}
-        CONTACT SUBMISSION
+        CONTACT SUBMISSION [{$appName}]
         {$separator}
+        App: {$appName}
         Timestamp: {$timestamp}
         Name: {$name}
         Email: {$email}
@@ -100,6 +102,13 @@ class StorageNotifier implements ContactNotifier
         {$message}
 
         ENTRY;
+    }
+
+    private function getAppName(): string
+    {
+        $appName = config('notifications.app_name');
+
+        return is_string($appName) && $appName !== '' ? $appName : 'App';
     }
 
     private function sanitize(string $value): string

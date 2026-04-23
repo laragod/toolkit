@@ -22,6 +22,19 @@ return [
 
     /*
      |--------------------------------------------------------------------------
+     | App Signature
+     |--------------------------------------------------------------------------
+     |
+     | An identifier prepended to every outbound notification so a shared
+     | Telegram/Discord/Email channel can distinguish between multiple apps.
+     | Falls back to APP_NAME when NOTIFICATION_APP_NAME is not set.
+     |
+     */
+
+    'app_name' => env('NOTIFICATION_APP_NAME', env('APP_NAME', 'App')),
+
+    /*
+     |--------------------------------------------------------------------------
      | Channel Configurations
      |--------------------------------------------------------------------------
      |

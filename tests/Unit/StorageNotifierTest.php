@@ -117,4 +117,18 @@ class StorageNotifierTest extends TestCase
         $this->assertTrue($result);
         Storage::disk('local')->assertExists('contact_submissions.log');
     }
+
+    public function test_entry_includes_app_name_signature(): void
+    {
+        Storage::fake('local');
+        config(['notifications.app_name' => 'Laragod']);
+
+        $notifier = new StorageNotifier('local', 'contact_submissions.log');
+        $notifier->send('John', 'john@example.com', 'Test');
+
+        $content = Storage::disk('local')->get('contact_submissions.log');
+        $this->assertNotNull($content);
+        $this->assertStringContainsString('[Laragod]', $content);
+        $this->assertStringContainsString('App: Laragod', $content);
+    }
 }

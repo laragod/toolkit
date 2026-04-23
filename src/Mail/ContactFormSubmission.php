@@ -22,10 +22,19 @@ class ContactFormSubmission extends Mailable
 
     public function envelope(): Envelope
     {
+        $appName = $this->getAppName();
+
         return new Envelope(
             replyTo: [new Address($this->senderEmail, $this->senderName)],
-            subject: 'New Contact Form Submission',
+            subject: "[{$appName}] New Contact Form Submission",
         );
+    }
+
+    private function getAppName(): string
+    {
+        $appName = config('notifications.app_name');
+
+        return is_string($appName) && $appName !== '' ? $appName : 'App';
     }
 
     public function content(): Content
@@ -37,6 +46,7 @@ class ContactFormSubmission extends Mailable
 
     private function buildHtml(): string
     {
+        $escapedAppName = htmlspecialchars($this->getAppName(), ENT_QUOTES, 'UTF-8');
         $escapedName = htmlspecialchars($this->senderName, ENT_QUOTES, 'UTF-8');
         $escapedEmail = htmlspecialchars($this->senderEmail, ENT_QUOTES, 'UTF-8');
         $escapedMessage = nl2br(htmlspecialchars($this->messageContent, ENT_QUOTES, 'UTF-8'));
@@ -54,12 +64,13 @@ class ContactFormSubmission extends Mailable
                 .field { margin-bottom: 15px; }
                 .label { font-weight: bold; color: #4F46E5; }
                 .value { margin-top: 5px; }
+                .app-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 3px; font-size: 0.8em; margin-right: 8px; }
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="header">
-                    <h2>New Contact Request</h2>
+                    <h2><span class="app-badge">{$escapedAppName}</span>New Contact Request</h2>
                 </div>
                 <div class="content">
                     <div class="field">

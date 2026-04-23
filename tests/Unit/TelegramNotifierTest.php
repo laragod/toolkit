@@ -107,4 +107,52 @@ class TelegramNotifierTest extends TestCase
 
         $this->assertFalse($notifier->isConfigured());
     }
+
+    public function test_prepends_app_name_signature(): void
+    {
+        Http::fake([
+            'api.telegram.org/*' => Http::response(['ok' => true], 200),
+        ]);
+
+        config(['notifications.app_name' => 'Laragod']);
+
+        $notifier = new TelegramNotifier('test-token', '123456');
+        $notifier->send('John', 'john@example.com', 'Test');
+
+        Http::assertSent(
+            fn ($request) => str_contains($request['text'], '[Laragod]')
+                && str_contains($request['text'], 'New contact request'),
+        );
+    }
+
+    public function test_signature_falls_back_when_app_name_missing(): void
+    {
+        Http::fake([
+            'api.telegram.org/*' => Http::response(['ok' => true], 200),
+        ]);
+
+        config(['notifications.app_name' => null]);
+
+        $notifier = new TelegramNotifier('test-token', '123456');
+        $notifier->send('John', 'john@example.com', 'Test');
+
+        Http::assertSent(fn ($request) => str_contains($request['text'], '[App]'));
+    }
+
+    public function test_signature_escapes_html(): void
+    {
+        Http::fake([
+            'api.telegram.org/*' => Http::response(['ok' => true], 200),
+        ]);
+
+        config(['notifications.app_name' => '<script>Evil</script>']);
+
+        $notifier = new TelegramNotifier('test-token', '123456');
+        $notifier->send('John', 'john@example.com', 'Test');
+
+        Http::assertSent(
+            fn ($request) => !str_contains($request['text'], '<script>')
+                && str_contains($request['text'], '&lt;script&gt;'),
+        );
+    }
 }

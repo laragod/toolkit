@@ -179,4 +179,23 @@ class WhatsappNotifierTest extends TestCase
 
         $this->assertFalse($notifier->isConfigured());
     }
+
+    public function test_prepends_app_name_signature(): void
+    {
+        Http::fake([
+            'api.whatsapp.com/*' => Http::response(['success' => true], 200),
+        ]);
+
+        config(['notifications.app_name' => 'Laragod']);
+
+        $notifier = new WhatsappNotifier(
+            'https://api.whatsapp.com/send',
+            'test-token',
+            '+1234567890',
+            '+0987654321',
+        );
+        $notifier->send('John', 'john@example.com', 'Test');
+
+        Http::assertSent(fn ($request) => str_contains($request['body'], '[Laragod]'));
+    }
 }

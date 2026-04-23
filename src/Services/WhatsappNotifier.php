@@ -123,17 +123,25 @@ class WhatsappNotifier implements ContactNotifier
 
     private function formatMessage(string $name, string $email, string $message): string
     {
+        $appName = htmlspecialchars($this->getAppName(), ENT_QUOTES, 'UTF-8');
         $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
         $safeEmail = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
         $safeMessage = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
 
         return (
-            "📩 *New Contact Request*\n\n" . sprintf(
+            "📩 *[{$appName}] New Contact Request*\n\n" . sprintf(
                 '👤 *Name:* %s%s',
                 $safeName,
                 PHP_EOL,
             ) . "📧 *Email:* {$safeEmail}\n\n" . ('💬 *Message:*
 ' . $safeMessage)
         );
+    }
+
+    private function getAppName(): string
+    {
+        $appName = config('notifications.app_name');
+
+        return is_string($appName) && $appName !== '' ? $appName : 'App';
     }
 }
