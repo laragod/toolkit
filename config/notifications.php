@@ -27,11 +27,30 @@ return [
      |
      | An identifier prepended to every outbound notification so a shared
      | Telegram/Discord/Email channel can distinguish between multiple apps.
-     | Falls back to APP_NAME when NOTIFICATION_APP_NAME is not set.
+     | When NOTIFICATION_APP_NAME is not set, the host application's
+     | config('app.name') is used at runtime.
      |
      */
 
-    'app_name' => env('NOTIFICATION_APP_NAME', env('APP_NAME', 'App')),
+    'app_name' => env('NOTIFICATION_APP_NAME'),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Throttle Repetitive Requests
+     |--------------------------------------------------------------------------
+     |
+     | Limits how many notifications a single sender (keyed by email) can
+     | trigger within the decay window. Requests over the limit are held:
+     | logged, but no notification is dispatched — so a bot re-submitting
+     | the same form (e.g. a newsletter signup) can't flood your channels.
+     |
+     */
+
+    'throttle' => [
+        'enabled' => (bool) env('NOTIFICATION_THROTTLE_ENABLED', true),
+        'max_attempts' => (int) env('NOTIFICATION_THROTTLE_MAX_ATTEMPTS', 3),
+        'decay_seconds' => (int) env('NOTIFICATION_THROTTLE_DECAY_SECONDS', 3600),
+    ],
 
     /*
      |--------------------------------------------------------------------------

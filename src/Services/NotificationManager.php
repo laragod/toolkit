@@ -7,6 +7,7 @@ namespace Laragod\Toolkit\Services;
 use Laragod\Toolkit\Contracts\ContactNotifier;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 
 class NotificationManager
 {
@@ -25,9 +26,24 @@ class NotificationManager
     /**
      * Send a contact notification through all configured channels.
      * Each channel is independent - one failure won't affect others.
+     *
+     * Repeated submissions from the same sender are held once the
+     * configured throttle limit is reached. Held submissions are logged
+     * and reported as handled (true) so callers don't surface an error
+     * that would tell a bot it has been rate limited.
      */
     public function sendContactNotification(string $name, string $email, string $message): bool
     {
+        if ($this->shouldHold($email)) {
+            Log::notice('Contact notification held by throttle', [
+                'name' => $name,
+                'email' => $email,
+                'message' => $message,
+            ]);
+
+            return true;
+        }
+
         $configuredNotifiers = $this->notifiers->filter(
             static fn (ContactNotifier $notifier): bool => $notifier->isConfigured(),
         );
@@ -97,6 +113,38 @@ class NotificationManager
                 'success' => false,
             ];
         }
+    }
+
+    /**
+     * Check the sender against the throttle and record this attempt.
+     *
+     * Returns true when the sender has exhausted their allowance for the
+     * current decay window and the submission should be held.
+     */
+    private function shouldHold(string $email): bool
+    {
+        $throttle = config('notifications.throttle');
+
+        if (!is_array($throttle) || ($throttle['enabled'] ?? false) !== true) {
+            return false;
+        }
+
+        $maxAttempts = $throttle['max_attempts'] ?? null;
+        $decaySeconds = $throttle['decay_seconds'] ?? null;
+
+        if (!is_int($maxAttempts) || $maxAttempts < 1 || !is_int($decaySeconds) || $decaySeconds < 1) {
+            return false;
+        }
+
+        $key = 'laragod-toolkit:contact:' . sha1(mb_strtolower(trim($email)));
+
+        if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
+            return true;
+        }
+
+        RateLimiter::hit($key, $decaySeconds);
+
+        return false;
     }
 
     /**

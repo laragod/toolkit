@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Laragod\Toolkit\Mail;
 
+use Laragod\Toolkit\Concerns\ResolvesAppName;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
@@ -13,6 +14,7 @@ use Illuminate\Mail\Mailables\Envelope;
 class ContactFormSubmission extends Mailable
 {
     use Queueable;
+    use ResolvesAppName;
 
     public function __construct(
         public readonly string $senderName,
@@ -28,13 +30,6 @@ class ContactFormSubmission extends Mailable
             replyTo: [new Address($this->senderEmail, $this->senderName)],
             subject: "[{$appName}] New Contact Form Submission",
         );
-    }
-
-    private function getAppName(): string
-    {
-        $appName = config('notifications.app_name');
-
-        return is_string($appName) && $appName !== '' ? $appName : 'App';
     }
 
     public function content(): Content

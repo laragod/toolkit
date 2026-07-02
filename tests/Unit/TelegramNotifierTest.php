@@ -125,13 +125,29 @@ class TelegramNotifierTest extends TestCase
         );
     }
 
-    public function test_signature_falls_back_when_app_name_missing(): void
+    public function test_signature_falls_back_to_app_name_config(): void
     {
         Http::fake([
             'api.telegram.org/*' => Http::response(['ok' => true], 200),
         ]);
 
         config(['notifications.app_name' => null]);
+        config(['app.name' => 'HostApp']);
+
+        $notifier = new TelegramNotifier('test-token', '123456');
+        $notifier->send('John', 'john@example.com', 'Test');
+
+        Http::assertSent(fn ($request) => str_contains($request['text'], '[HostApp]'));
+    }
+
+    public function test_signature_falls_back_when_app_name_missing_everywhere(): void
+    {
+        Http::fake([
+            'api.telegram.org/*' => Http::response(['ok' => true], 200),
+        ]);
+
+        config(['notifications.app_name' => null]);
+        config(['app.name' => null]);
 
         $notifier = new TelegramNotifier('test-token', '123456');
         $notifier->send('John', 'john@example.com', 'Test');

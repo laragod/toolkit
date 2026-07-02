@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Laragod\Toolkit\Services;
 
+use Laragod\Toolkit\Concerns\ResolvesAppName;
 use Laragod\Toolkit\Contracts\ContactNotifier;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class WhatsappNotifier implements ContactNotifier
 {
+    use ResolvesAppName;
+
     public function __construct(
         private readonly ?string $apiUrl = null,
         #[\SensitiveParameter]
@@ -136,12 +139,5 @@ class WhatsappNotifier implements ContactNotifier
             ) . "📧 *Email:* {$safeEmail}\n\n" . ('💬 *Message:*
 ' . $safeMessage)
         );
-    }
-
-    private function getAppName(): string
-    {
-        $appName = config('notifications.app_name');
-
-        return is_string($appName) && $appName !== '' ? $appName : 'App';
     }
 }

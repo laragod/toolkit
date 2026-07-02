@@ -127,6 +127,21 @@
 
   The storage channel writes to a local file and never fails — recommended as a backup alongside any other channel.
 
+  Optional settings:
+```
+  # App signature shown in every notification (defaults to config('app.name'))
+  NOTIFICATION_APP_NAME=MySite
+
+  # Sender throttle — holds repeat submissions from the same email address
+  # (enabled by default: max 3 per hour per sender)
+  NOTIFICATION_THROTTLE_ENABLED=true
+  NOTIFICATION_THROTTLE_MAX_ATTEMPTS=3
+  NOTIFICATION_THROTTLE_DECAY_SECONDS=3600
+```
+  Held submissions are written to the application log (`Contact notification held by throttle`)
+  with the full payload, and the call still returns `true` — a bot hammering your contact or
+  newsletter form gets a success response but your channels stay quiet.
+
   ---
   6. Inject NotificationManager into your contact controller
 ```

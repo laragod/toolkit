@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Laragod\Toolkit\Services;
 
+use Laragod\Toolkit\Concerns\ResolvesAppName;
 use Laragod\Toolkit\Contracts\ContactNotifier;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class StorageNotifier implements ContactNotifier
 {
+    use ResolvesAppName;
+
     public function __construct(
         private readonly ?string $disk = null,
         private readonly ?string $path = null,
@@ -102,13 +105,6 @@ class StorageNotifier implements ContactNotifier
         {$message}
 
         ENTRY;
-    }
-
-    private function getAppName(): string
-    {
-        $appName = config('notifications.app_name');
-
-        return is_string($appName) && $appName !== '' ? $appName : 'App';
     }
 
     private function sanitize(string $value): string

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Laragod\Toolkit\Services;
 
+use Laragod\Toolkit\Concerns\ResolvesAppName;
 use Laragod\Toolkit\Contracts\ContactNotifier;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class TelegramNotifier implements ContactNotifier
 {
+    use ResolvesAppName;
+
     public function __construct(
         #[\SensitiveParameter]
         private readonly ?string $token = null,
@@ -110,12 +113,5 @@ class TelegramNotifier implements ContactNotifier
             ) . "📧 <b>Email:</b> {$email}\n\n" . ('💬 <b>Message:</b>
 ' . $message)
         );
-    }
-
-    private function getAppName(): string
-    {
-        $appName = config('notifications.app_name');
-
-        return is_string($appName) && $appName !== '' ? $appName : 'App';
     }
 }

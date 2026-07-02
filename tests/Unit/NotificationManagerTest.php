@@ -267,4 +267,155 @@ class NotificationManagerTest extends TestCase
 
         $this->assertCount(0, $manager->getNotifiers());
     }
+
+    public function test_holds_repeated_submissions_from_same_sender(): void
+    {
+        Config::set('notifications.throttle', [
+            'enabled' => true,
+            'max_attempts' => 2,
+            'decay_seconds' => 3600,
+        ]);
+
+        /** @var MockInterface&ContactNotifier $notifier */
+        $notifier = Mockery::mock(ContactNotifier::class);
+
+        /** @var Expectation $isConfiguredExp */
+        $isConfiguredExp = $notifier->shouldReceive('isConfigured');
+        $isConfiguredExp->andReturn(true);
+
+        /** @var Expectation $getChannelExp */
+        $getChannelExp = $notifier->shouldReceive('getChannel');
+        $getChannelExp->andReturn('telegram');
+
+        /** @var Expectation $sendExp */
+        $sendExp = $notifier->shouldReceive('send');
+        $sendExp->twice()->andReturn(true);
+
+        $manager = new NotificationManager(new \Illuminate\Support\Collection([$notifier]));
+
+        $this->assertTrue($manager->sendContactNotification('Bot', 'bot@example.com', 'First'));
+        $this->assertTrue($manager->sendContactNotification('Bot', 'bot@example.com', 'Second'));
+
+        // Third submission is held: reported as handled, but no channel is called.
+        $this->assertTrue($manager->sendContactNotification('Bot', 'bot@example.com', 'Third'));
+    }
+
+    public function test_throttle_is_keyed_per_sender(): void
+    {
+        Config::set('notifications.throttle', [
+            'enabled' => true,
+            'max_attempts' => 1,
+            'decay_seconds' => 3600,
+        ]);
+
+        /** @var MockInterface&ContactNotifier $notifier */
+        $notifier = Mockery::mock(ContactNotifier::class);
+
+        /** @var Expectation $isConfiguredExp */
+        $isConfiguredExp = $notifier->shouldReceive('isConfigured');
+        $isConfiguredExp->andReturn(true);
+
+        /** @var Expectation $getChannelExp */
+        $getChannelExp = $notifier->shouldReceive('getChannel');
+        $getChannelExp->andReturn('telegram');
+
+        /** @var Expectation $sendExp */
+        $sendExp = $notifier->shouldReceive('send');
+        $sendExp->twice()->andReturn(true);
+
+        $manager = new NotificationManager(new \Illuminate\Support\Collection([$notifier]));
+
+        $this->assertTrue($manager->sendContactNotification('Alice', 'alice@example.com', 'Hello'));
+        $this->assertTrue($manager->sendContactNotification('Bob', 'bob@example.com', 'Hello'));
+    }
+
+    public function test_throttle_normalizes_sender_email(): void
+    {
+        Config::set('notifications.throttle', [
+            'enabled' => true,
+            'max_attempts' => 1,
+            'decay_seconds' => 3600,
+        ]);
+
+        /** @var MockInterface&ContactNotifier $notifier */
+        $notifier = Mockery::mock(ContactNotifier::class);
+
+        /** @var Expectation $isConfiguredExp */
+        $isConfiguredExp = $notifier->shouldReceive('isConfigured');
+        $isConfiguredExp->andReturn(true);
+
+        /** @var Expectation $getChannelExp */
+        $getChannelExp = $notifier->shouldReceive('getChannel');
+        $getChannelExp->andReturn('telegram');
+
+        /** @var Expectation $sendExp */
+        $sendExp = $notifier->shouldReceive('send');
+        $sendExp->once()->andReturn(true);
+
+        $manager = new NotificationManager(new \Illuminate\Support\Collection([$notifier]));
+
+        $this->assertTrue($manager->sendContactNotification('Bot', 'bot@example.com', 'First'));
+
+        // Case/whitespace variations of the same address are still held.
+        $this->assertTrue($manager->sendContactNotification('Bot', ' BOT@example.com ', 'Second'));
+    }
+
+    public function test_throttle_can_be_disabled(): void
+    {
+        Config::set('notifications.throttle', [
+            'enabled' => false,
+            'max_attempts' => 1,
+            'decay_seconds' => 3600,
+        ]);
+
+        /** @var MockInterface&ContactNotifier $notifier */
+        $notifier = Mockery::mock(ContactNotifier::class);
+
+        /** @var Expectation $isConfiguredExp */
+        $isConfiguredExp = $notifier->shouldReceive('isConfigured');
+        $isConfiguredExp->andReturn(true);
+
+        /** @var Expectation $getChannelExp */
+        $getChannelExp = $notifier->shouldReceive('getChannel');
+        $getChannelExp->andReturn('telegram');
+
+        /** @var Expectation $sendExp */
+        $sendExp = $notifier->shouldReceive('send');
+        $sendExp->times(3)->andReturn(true);
+
+        $manager = new NotificationManager(new \Illuminate\Support\Collection([$notifier]));
+
+        $this->assertTrue($manager->sendContactNotification('Bot', 'bot@example.com', 'First'));
+        $this->assertTrue($manager->sendContactNotification('Bot', 'bot@example.com', 'Second'));
+        $this->assertTrue($manager->sendContactNotification('Bot', 'bot@example.com', 'Third'));
+    }
+
+    public function test_throttle_ignores_invalid_config(): void
+    {
+        Config::set('notifications.throttle', [
+            'enabled' => true,
+            'max_attempts' => 0,
+            'decay_seconds' => 'soon',
+        ]);
+
+        /** @var MockInterface&ContactNotifier $notifier */
+        $notifier = Mockery::mock(ContactNotifier::class);
+
+        /** @var Expectation $isConfiguredExp */
+        $isConfiguredExp = $notifier->shouldReceive('isConfigured');
+        $isConfiguredExp->andReturn(true);
+
+        /** @var Expectation $getChannelExp */
+        $getChannelExp = $notifier->shouldReceive('getChannel');
+        $getChannelExp->andReturn('telegram');
+
+        /** @var Expectation $sendExp */
+        $sendExp = $notifier->shouldReceive('send');
+        $sendExp->twice()->andReturn(true);
+
+        $manager = new NotificationManager(new \Illuminate\Support\Collection([$notifier]));
+
+        $this->assertTrue($manager->sendContactNotification('Bot', 'bot@example.com', 'First'));
+        $this->assertTrue($manager->sendContactNotification('Bot', 'bot@example.com', 'Second'));
+    }
 }

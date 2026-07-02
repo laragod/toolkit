@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Laragod\Toolkit\Services;
 
+use Laragod\Toolkit\Concerns\ResolvesAppName;
 use Laragod\Toolkit\Contracts\ContactNotifier;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class DiscordNotifier implements ContactNotifier
 {
+    use ResolvesAppName;
+
     public function __construct(
         private readonly ?string $webhookUrl = null,
     ) {}
@@ -113,12 +116,5 @@ class DiscordNotifier implements ContactNotifier
                 ],
             ],
         ];
-    }
-
-    private function getAppName(): string
-    {
-        $appName = config('notifications.app_name');
-
-        return is_string($appName) && $appName !== '' ? $appName : 'App';
     }
 }
