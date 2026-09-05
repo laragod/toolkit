@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-09-05
+
+### Changed
+- Laravel 13 support. `illuminate/*` constraints widened to `^12.0|^13.0`, dev
+  requirements to `orchestra/testbench ^10.0|^11.0` and `phpunit/phpunit ^11.5|^12.0`.
+  The suite passes unchanged on Laravel 13.30.1 and PHPUnit 12 — no source change was
+  needed, the pin was the only thing stopping installation.
+
+### Note for callers upgrading a Laravel 13 app
+- The notifiers here implement `ContactNotifier`: `send(string $name, string $email,
+  string $message)`. That is a contact-form contract, not a general alerting one. An
+  application that wants to push an arbitrary message to Telegram still needs its own
+  sender; installing this package does not replace one.
+
 ## [1.2.0] - 2026-07-02
 
 ### Added

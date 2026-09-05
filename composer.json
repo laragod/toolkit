@@ -2,20 +2,20 @@
     "name": "laragod/toolkit",
     "description": "Reusable backend toolkit for Laragod portfolio sites",
     "type": "library",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "license": "MIT",
     "require": {
         "php": "^8.4",
-        "illuminate/support": "^12.0",
-        "illuminate/http": "^12.0",
-        "illuminate/mail": "^12.0",
-        "illuminate/filesystem": "^12.0",
-        "illuminate/log": "^12.0",
-        "illuminate/routing": "^12.0"
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/http": "^12.0|^13.0",
+        "illuminate/mail": "^12.0|^13.0",
+        "illuminate/filesystem": "^12.0|^13.0",
+        "illuminate/log": "^12.0|^13.0",
+        "illuminate/routing": "^12.0|^13.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^10.0",
-        "phpunit/phpunit": "^11.5",
+        "orchestra/testbench": "^10.0|^11.0",
+        "phpunit/phpunit": "^11.5|^12.0",
         "mockery/mockery": "^1.6"
     },
     "autoload": {
